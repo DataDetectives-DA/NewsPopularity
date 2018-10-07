@@ -44,3 +44,24 @@ barplot(counts1, main="comparison of article been published for various category
 #when we observe the above graph a lot of articles are published under the category of channel being world,technology,and entertainment
 no_shares<-News[,c(58)]
 
+
+#PCA ANANLYSIS
+library(factoextra)
+#performing PCA Analysis on News dataframe except the target variable
+PCA_Analysis <- prcomp(News[-58],scale=TRUE,center=TRUE)
+#getting all the standard deviation which is in descending order
+PCA_stdev<-PCA_Analysis$sdev
+#getting the respective variances
+PCA_var<-PCA_stdev^2
+#proportion of variance explained for each component
+prop_var <- PCA_var/sum(PCA_var)
+sum<-0
+#percentage of variance for 42 principal components which accounts for 98% of variance
+for(i in 1:42){
+  sum<-sum+prop_var[i]
+}
+#scree plot to access components or factors which explains the most of variability in the data
+#this shows that 42 principal components seem to account for 98% of variance so we can conclude that we have reduced 57 datapoints to 42 datapoints 
+plot(prop_var, xlab = "Principal Component",ylab = "Proportion of Variance Explained",type = "b")
+#cumulative scree plot
+plot(cumsum(prop_var), xlab = "Principal Component",ylab = "Cumulative Proportion of Variance Explained",type = "b")
