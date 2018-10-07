@@ -65,3 +65,11 @@ for(i in 1:42){
 plot(prop_var, xlab = "Principal Component",ylab = "Proportion of Variance Explained",type = "b")
 #cumulative scree plot
 plot(cumsum(prop_var), xlab = "Principal Component",ylab = "Cumulative Proportion of Variance Explained",type = "b")
+
+#-----------------------------------------MODELS -----------------------------------------------
+set.seed(20)
+train_data_index<-sample(1:nrow(News),0.8*(nrow(News)),replace=FALSE);
+test_data_index<-setdiff(1:nrow(News),train_data_index);
+train_data<-News[train_data_index,]
+test_data<-News[test_data_index,]
+
