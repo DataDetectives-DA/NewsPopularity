@@ -72,4 +72,7 @@ train_data_index<-sample(1:nrow(News),0.8*(nrow(News)),replace=FALSE);
 test_data_index<-setdiff(1:nrow(News),train_data_index);
 train_data<-News[train_data_index,]
 test_data<-News[test_data_index,]
-
+model1<- lm(formula=shares~.,data=train_data)
+predmodel1<-predict(model1,test_data)
+errormodel1<-test_data$shares - predmodel1 
+rmse_usingmodel1<-sqrt(mean((errormodel1)^2)) 
