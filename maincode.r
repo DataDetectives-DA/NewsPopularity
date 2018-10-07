@@ -12,6 +12,7 @@ str(News)
 #if the data has any missing values:
 
 sum(is.na(News))
+#if 0 no missing values
 
 #outliers in var:"n_unique_tokens", "n_non_stop_words", and "n_non_stop_unique_tokens"
 # These values seem unusual from the rest values, hence removing them
