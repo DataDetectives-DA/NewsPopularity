@@ -31,9 +31,16 @@ News <- subset( News, select = -c(url, timedelta, is_weekend ) )
 #---------------------------------------------------------------------------------------------------------
 #selecting the  column which tells which day is the article been published .these columns ae one hot encoded 
 data<-News[,c(30,31,32,33,34,35,36)]
-whichday<-toupper(names(data)[max.col(data)])
+data$whichday<-as.factor(toupper(names(data)[max.col(data)]))
+counts <- table(data$whichday)
+#plotting bar graph
+barplot(counts, main="comparison of article been published in which day of the week",xlab="day",col=rgb(0.3,0.1,0.4,0.6),las=2)
+#From the above bargraph we can come to a conclusion that a lot of articles are been published during weekdays and not during weekends. 
 #selecting the cloumns of which channel like enternaiment or sports or so on columns
-data<-News[,c(12,13,14,15,16,17)]
-whichchannel<-toupper(names(data)[max.col(data)])
+data1<-News[,c(12,13,14,15,16,17)]
+data1$whichchannel<-as.factor(toupper(names(data)[max.col(data)]))
+counts1<-table(data1$whichchannel)
+barplot(counts1, main="comparison of article been published for various category of channels",xlab="day",col=rgb(0.3,0.1,0.4,0.6),las=2)
+#when we observe the above graph a lot of articles are published under the category of channel being world,technology,and entertainment
 no_shares<-News[,c(58)]
 
