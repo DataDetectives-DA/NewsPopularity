@@ -2,6 +2,7 @@
 library(caret)
 library(corrplot)
 library(plyr)
+require(tree)
 
 # load required dataset
 dat <- read.csv("OnlineNewsPopularity.csv")
@@ -44,25 +45,10 @@ highlyCorCol
 dat3 <- numericData[, -which(colnames(dat2) %in% highlyCorCol)]
 dim(dat3)
 
-#Classifing as popular or not based on thershold = 3rd quantile of shares
-#dat3['popular']<-0
-
+#classifiying if popular or not using threshold = 3rd quantile
 q<-quantile(dat3$shares,0.75)
-
-#for (i in 1:nrow(dat3))
-#{
-  #if(dat3$shares[i]>=q)
-  #{
-  #  dat3$popular[i]=1
- # }
-#}
-
-
-require(tree)
 popular = ifelse(dat3$shares<=q, "No", "Yes")
-
 dat4 = data.frame(dat3, popular)
-#dat4<-dat4[,-1]
 
 #spliting data into train and test
 n_random<-round(0.7*nrow(dat4))
@@ -85,6 +71,3 @@ confusion_matrix<-table(tree.pred, test$popular)
 #calculating miss classification rate
 miss_class<-1-(sum(diag(confusion_matrix))/sum(confusion_matrix))
 print(miss_class)
-
-
-
