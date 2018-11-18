@@ -42,19 +42,22 @@ highlyCorCol <- colnames(numericData)[highlyCorrelated]
 highlyCorCol
 
 # Remove highly correlated variables and create a new dataset
-dat3 <- numericData[, -which(colnames(dat2) %in% highlyCorCol)]
-dim(dat3)
+dat3 <- dat2[, -which(colnames(dat2) %in% highlyCorCol)]
+dat3
 
 #classifiying if popular or not using threshold = 3rd quantile
 q<-quantile(dat3$shares,0.75)
 popular = ifelse(dat3$shares<=q, "No", "Yes")
-dat4 = data.frame(dat3, popular)
+dat3 = data.frame(dat3, popular)
+
+#removing non numerical data "url"
+dat3<-dat3[,-1]
 
 #spliting data into train and test
-n_random<-round(0.7*nrow(dat4))
-index<-sample(1:nrow(dat4),n_random)
-train<-dat4[index,]
-test<-dat4[-index,]
+n_random<-round(0.7*nrow(dat3))
+index<-sample(1:nrow(dat3),n_random)
+train<-dat3[index,]
+test<-dat3[-index,]
 
 #creating model
 tree.train = tree(popular~.-shares, data=train)
