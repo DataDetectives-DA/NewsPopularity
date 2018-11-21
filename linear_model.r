@@ -2,10 +2,8 @@
 
 News <- read.csv('A:/Da_proj/OnlineNewsPopularity/OnlineNewsPopularity.csv', header = TRUE)
 
-#outlier removal
 News=News[!News$n_unique_tokens==701,]
 
-#non-predictice attributes removed
 News <- subset( News, select = -c(url, timedelta, is_weekend ) )
 
 # The following variables are categorical with 2 values : 0 and 1 but are numeric; hence, converted all such variables to factor variables with 2 levels.
@@ -73,3 +71,22 @@ pred_2 = predict(fit_step_reg, test.news)
 sqrt(mean((test.news$shares - pred_2)^2))
 
 # We thus get an optimized model with R-square value of approximately 0.13 and Root mean square error of approximately 0.87. This model includes only the statiscal variables.
+
+#Now,predicting whether the news is popular or not based on 3rd quantile value of log(shares)
+q<-quantile(News$shares,0.75)
+
+#for testing data
+popular = ifelse(test.news$shares<=q, "Not Popular", "Popular")
+test.news = data.frame(test.news, popular)
+
+#for predicted data
+popular_pred=ifelse(pred_2<=q, "Not Popular", "Popular")
+
+#creating confusion matrix
+confusion_matrix<-table(popular_pred, test.news$popular)
+
+#calculating miss classification rate
+miss_class<-1-(sum(diag(confusion_matrix))/sum(confusion_matrix))
+print(miss_class)
+
+ #misclassification ratecomes out to be 0.25 which is decent
