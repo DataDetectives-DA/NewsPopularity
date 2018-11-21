@@ -2,8 +2,10 @@
 
 News <- read.csv('A:/Da_proj/OnlineNewsPopularity/OnlineNewsPopularity.csv', header = TRUE)
 
+#outlier removal
 News=News[!News$n_unique_tokens==701,]
 
+#non-predictice attributes removed
 News <- subset( News, select = -c(url, timedelta, is_weekend ) )
 
 # The following variables are categorical with 2 values : 0 and 1 but are numeric; hence, converted all such variables to factor variables with 2 levels.
