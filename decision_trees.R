@@ -7,6 +7,12 @@ require(tree)
 # load required dataset
 dat <- read.csv("OnlineNewsPopularity.csv")
 
+#removing outlier
+dat=dat[!dat$n_unique_tokens==701,]
+
+#removing non numerical data 
+dat <- subset( dat, select = -c(url, timedelta, is_weekend ) )
+
 # Set seed
 set.seed(227)
 
@@ -50,9 +56,6 @@ q<-quantile(dat3$shares,0.75)
 popular = ifelse(dat3$shares<=q, "No", "Yes")
 dat3 = data.frame(dat3, popular)
 
-#removing non numerical data "url"
-dat3<-dat3[,-1]
-
 #spliting data into train and test
 n_random<-round(0.7*nrow(dat3))
 index<-sample(1:nrow(dat3),n_random)
@@ -74,3 +77,5 @@ confusion_matrix<-table(tree.pred, test$popular)
 #calculating miss classification rate
 miss_class<-1-(sum(diag(confusion_matrix))/sum(confusion_matrix))
 print(miss_class)
+
+#misclassification rate comes out to be 0.24
