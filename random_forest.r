@@ -35,7 +35,7 @@ print(output.forest)
 random_forest_pred<-predict(output.forest,test)
 
 #creating confusion matrix
-confusion_matrix<-table(test$popular,random_forest_pred)
+confusion_matrix<-table(random_forest_pred,test$popular)
 
 #calculating miss classification rate
 miss_class<-1-(sum(diag(confusion_matrix))/sum(confusion_matrix))
