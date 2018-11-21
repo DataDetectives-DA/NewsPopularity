@@ -26,7 +26,7 @@ train<-News[index,]
 test<-News[-index,]
 
 # Create the forest.
-output.forest <- randomForest(shares ~ ., data = train,ntree=100)
+output.forest <- randomForest(popular ~ .-shares, data = train,ntree=100)
 
 # View the forest results.
 print(output.forest) 
@@ -35,7 +35,7 @@ print(output.forest)
 random_forest_pred<-predict(output.forest,test)
 
 #creating confusion matrix
-confusion_matrix<-table(random_forest_pred, test$popular)
+confusion_matrix<-table(test$popular,random_forest_pred)
 
 #calculating miss classification rate
 miss_class<-1-(sum(diag(confusion_matrix))/sum(confusion_matrix))
