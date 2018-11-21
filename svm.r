@@ -31,7 +31,7 @@ svmLinearModel = svm(popular~.-shares,data = train,type="C-classification",kerne
 svm_linear_pred = predict(svmLinearModel,test)
 
 #creating confusion matrix
-confusion_matrix_lin<-table(test$popular,svm_linear_pred)
+confusion_matrix_lin<-table(svm_linear_pred,test$popular)
 
 #calculating miss classification rate
 miss_class_lin<-1-(sum(diag(confusion_matrix_lin))/sum(confusion_matrix_lin))
@@ -43,7 +43,7 @@ svmPolyModel = svm(popular~.-shares,data = train,type="C-classification",kernel=
 svm_poly_pred = predict(svmPolyModel,test)
 
 #creating confusion matrix
-confusion_matrix_poly<-table(test$popular,svm_poly_pred)
+confusion_matrix_poly<-table(svm_poly_pred,test$popular)
 
 #calculating miss classification rate
 miss_class_poly<-1-(sum(diag(confusion_matrix_poly))/sum(confusion_matrix_poly))
@@ -54,7 +54,7 @@ svmRadialModel = svm(popular~.-shares,data = train,type="C-classification",kerne
 svm_radial_pred = predict(svmRadialModel,test)
 
 #creating confusion matrix
-confusion_matrix_rad<-table(test$popular,svm_radial_pred)
+confusion_matrix_rad<-table(svm_radial_pred,test$popular)
 
 #calculating miss classification rate
 miss_class_rad<-1-(sum(diag(confusion_matrix_rad))/sum(confusion_matrix_rad))
