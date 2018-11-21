@@ -19,7 +19,7 @@ popular = ifelse(News$shares<=q, 0, 1)
 #0 signifies not popular and 1 signifies popular
 News = data.frame(News, popular)
 
-
+set.seed(227)
 #spliting data into train and test
 n_random<-round(0.75*nrow(News))
 index<-sample(1:nrow(News),n_random)
