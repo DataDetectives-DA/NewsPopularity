@@ -1,6 +1,6 @@
 # Reading data to a dataframe :
 
-News <- read.csv('A:/Da_proj/OnlineNewsPopularity/OnlineNewsPopularity.csv', header = TRUE)
+News <- read.csv('OnlineNewsPopularity.csv', header = TRUE)
 
 News=News[!News$n_unique_tokens==701,]
 
