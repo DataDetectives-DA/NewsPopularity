@@ -1,0 +1,506 @@
+ 
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+#LINEAR MODEL
+# Reading data to a dataframe :
+
+cat("\nLINEAR MODEL")
+News <- read.csv('OnlineNewsPopularity.csv', header = TRUE)
+
+News=News[!News$n_unique_tokens==701,]
+
+News <- subset( News, select = -c(url, timedelta, is_weekend ) )
+
+# The following variables are categorical with 2 values : 0 and 1 but are numeric; hence, converted all such variables to factor variables with 2 levels.
+News$weekday_is_monday <- factor(News$weekday_is_monday) 
+News$weekday_is_wednesday <- factor(News$weekday_is_wednesday) 
+News$weekday_is_thursday <- factor(News$weekday_is_thursday) 
+News$weekday_is_friday <- factor(News$weekday_is_friday) 
+News$weekday_is_tuesday <- factor(News$weekday_is_tuesday) 
+News$weekday_is_saturday <- factor(News$weekday_is_saturday) 
+News$weekday_is_sunday <- factor(News$weekday_is_sunday) 
+
+News$data_channel_is_lifestyle <- factor(News$data_channel_is_lifestyle) 
+News$data_channel_is_entertainment <- factor(News$data_channel_is_entertainment) 
+News$data_channel_is_bus <- factor(News$data_channel_is_bus) 
+News$data_channel_is_socmed <- factor(News$data_channel_is_socmed) 
+News$data_channel_is_tech <- factor(News$data_channel_is_tech) 
+News$data_channel_is_world <- factor(News$data_channel_is_world)
+
+
+# Sampling the dataset into 75% : training data and 25% : test data:
+
+set.seed(174004689)
+
+NewsTrain <- sample(nrow(News),as.integer(nrow(News)*0.75))
+train.news = News[NewsTrain,]
+test.news = News[-NewsTrain,]
+
+# Now, we fit a model with all the variables; shares being the dependent variable and all other explanatory variables from the dataset as the predictors.
+
+fit_1 <- lm(shares ~ ., data = train.news)
+
+summary(fit_1)
+
+pred_1 = predict(fit_1, test.news)
+
+sqrt(mean((test.news$shares - pred_1)^2))
+
+# This model has a low R-square value, we can use a transformation on the model.
+
+# Now, I try using a log-transformation on our target variable to optimise our fit model:
+
+News$shares <- log(News$shares)
+
+NewsTrain <- sample(nrow(News),as.integer(nrow(News)*0.75))
+train.news = News[NewsTrain,]
+test.news = News[-NewsTrain,]
+
+# Now, I try fitting a model on the transformed target variable:
+
+fit_2 <- lm(shares ~ ., data = train.news)
+
+summary(fit_2)
+
+# This model gives a better R-square value than the previous model.
+
+# Now, I want to include only statistically significant variables in the model. So, I use the Stepwise regression step():
+
+fit_step_reg <- step(fit_2)
+
+summary(fit_step_reg)
+#this is giving us 41 relevant variables and we also see the pca was also giving us almost the same results.
+
+pred_2 = predict(fit_step_reg, test.news)
+cat("RMSE-")
+sqrt(mean((test.news$shares - pred_2)^2))
+cat("\n")
+
+# We thus get an optimized model with R-square value of approximately 0.13 and Root mean square error of approximately 0.87. This model includes only the statiscal variables.
+
+#Now,predicting whether the news is popular or not based on 3rd quantile value of log(shares)
+q<-quantile(News$shares,0.75)
+
+#for testing data
+popular = ifelse(test.news$shares<=q, "Not Popular", "Popular")
+test.news = data.frame(test.news, popular)
+
+#for predicted data
+popular_pred=ifelse(pred_2<=q, "Not Popular", "Popular")
+
+#creating confusion matrix
+confusion_matrix<-table(popular_pred, test.news$popular)
+
+#calculating miss classification rate
+miss_class<-1-(sum(diag(confusion_matrix))/sum(confusion_matrix))
+cat("Miss Classification Rate-")
+print(miss_class)
+cat("\n")
+
+cat("Accuracy-")
+print(1-miss_class)
+cat("\n")
+ #misclassification ratecomes out to be 0.25 which is decent
+```
+
+
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+#Logistic Regression MODEL
+
+cat("\nLogistic Regression MODEL")
+# load required libraries
+library(caret)
+library(corrplot)
+library(plyr)
+
+# load required dataset
+dat <- read.csv("OnlineNewsPopularity.csv")
+
+# Set seed
+set.seed(227)
+
+# Remove variables having high missing percentage (50%)
+dat1 <- dat[, colMeans(is.na(dat)) <= .5]
+dim(dat1)
+
+# Remove Zero and Near Zero-Variance Predictors
+nzv <- nearZeroVar(dat1)
+dat2 <- dat1[, -nzv]
+dim(dat2)
+
+# Identifying numeric variables
+numericData <- dat2[sapply(dat2, is.numeric)]
+
+# Calculate correlation matrix
+descrCor <- cor(numericData)
+
+# Print correlation matrix and look at max correlation
+print(descrCor)
+summary(descrCor[upper.tri(descrCor)])
+
+# find attributes that are highly corrected
+highlyCorrelated <- findCorrelation(descrCor, cutoff=0.7)
+
+# print indexes of highly correlated attributes
+print(highlyCorrelated)
+
+# Indentifying Variable Names of Highly Correlated Variables
+highlyCorCol <- colnames(numericData)[highlyCorrelated]
+
+# Print highly correlated attributes
+highlyCorCol
+
+# Remove highly correlated variables and create a new dataset
+dat3 <- dat2[, -which(colnames(dat2) %in% highlyCorCol)]
+dat3
+
+#classifiying if popular or not using threshold = 3rd quantile
+q<-quantile(dat3$shares,0.75)
+popular = ifelse(dat3$shares<=q, 0, 1)
+dat3 = data.frame(dat3, popular)
+
+#removing non numerical data "url"
+dat3<- dat3[,-1]
+dat3$popular<-factor(dat3$popular)
+
+#spliting data into train and test
+n_random<-round(0.7*nrow(dat3))
+index<-sample(1:nrow(dat3),n_random)
+train<-dat3[index,]
+test<-dat3[-index,]
+
+#training the model
+log_model<-glm (popular ~.-shares, data = train, family = binomial)
+
+#summary of the model
+summary(log_model)
+
+#prediction on test dataset
+pred <-predict(log_model, test,type = 'response')
+pred <- ifelse(pred > 0.5,1,0)
+
+#creating confusion matrix
+confusion_matrix<-table(pred, test$popular)
+
+cat("\nConfusion Matrix:-")
+print(confusion_matrix)
+cat("\n")
+cat("\n")
+
+#calculating miss classification rate
+miss_class<-1-(sum(diag(confusion_matrix))/sum(confusion_matrix))
+cat("Miss Classification Rate-")
+print(miss_class)
+cat("\n")
+
+cat("Accuracy-")
+print(1-miss_class)
+cat("\n")
+```
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+#Decision Trees MODEL
+cat("\n Decision Trees MODEL")
+# load required libraries
+library(caret)
+library(corrplot)
+library(plyr)
+require(tree)
+
+# load required dataset
+dat <- read.csv("OnlineNewsPopularity.csv")
+
+#removing outlier
+dat=dat[!dat$n_unique_tokens==701,]
+
+#removing non numerical data 
+dat <- subset( dat, select = -c(url, timedelta, is_weekend ) )
+
+# Set seed
+set.seed(227)
+
+# Remove variables having high missing percentage (50%)
+dat1 <- dat[, colMeans(is.na(dat)) <= .5]
+dim(dat1)
+
+# Remove Zero and Near Zero-Variance Predictors
+nzv <- nearZeroVar(dat1)
+dat2 <- dat1[, -nzv]
+dim(dat2)
+
+# Identifying numeric variables
+numericData <- dat2[sapply(dat2, is.numeric)]
+
+# Calculate correlation matrix
+descrCor <- cor(numericData)
+
+# Print correlation matrix and look at max correlation
+print(descrCor)
+summary(descrCor[upper.tri(descrCor)])
+
+# find attributes that are highly corrected
+highlyCorrelated <- findCorrelation(descrCor, cutoff=0.7)
+
+# print indexes of highly correlated attributes
+print(highlyCorrelated)
+
+# Indentifying Variable Names of Highly Correlated Variables
+highlyCorCol <- colnames(numericData)[highlyCorrelated]
+
+# Print highly correlated attributes
+highlyCorCol
+
+# Remove highly correlated variables and create a new dataset
+dat3 <- dat2[, -which(colnames(dat2) %in% highlyCorCol)]
+dat3
+
+#classifiying if popular or not using threshold = 3rd quantile
+q<-quantile(dat3$shares,0.75)
+popular = ifelse(dat3$shares<=q, "No", "Yes")
+dat3 = data.frame(dat3, popular)
+
+#spliting data into train and test
+n_random<-round(0.7*nrow(dat3))
+index<-sample(1:nrow(dat3),n_random)
+train<-dat3[index,]
+test<-dat3[-index,]
+
+#creating model
+tree.train = tree(popular~.-shares, data=train)
+
+#summary of the model
+summary(tree.train)
+
+#prediction on test dataset
+tree.pred = predict(tree.train, test, type="class")
+
+#creating confusion matrix
+confusion_matrix<-table(tree.pred, test$popular)
+
+#calculating miss classification rate
+miss_class<-1-(sum(diag(confusion_matrix))/sum(confusion_matrix))
+
+cat("\nMiss Classification Rate-")
+print(miss_class)
+cat("\n")
+
+cat("\nAccuracy-")
+print(1-miss_class)
+cat("\n")
+```
+
+
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+#SVM MODEL
+cat("\n  SVM MODEL")
+#importing required libraries
+library(caret)
+library(scales)
+library(e1071)
+
+# Reading data to a dataframe :
+
+News <- read.csv('OnlineNewsPopularity.csv', header = TRUE)
+
+#removing outlier
+News=News[!News$n_unique_tokens==701,]
+
+#removing non numeric attributes
+News <- subset( News, select = -c(url, timedelta, is_weekend ) )
+
+#classifiying if popular or not using threshold = 3rd quantile
+q<-quantile(News$shares,0.75)
+popular = ifelse(News$shares<=q, 0, 1)
+#0 signifies not popular and 1 signifies popular
+News = data.frame(News, popular)
+
+set.seed(227)
+#spliting data into train and test
+n_random<-round(0.75*nrow(News))
+index<-sample(1:nrow(News),n_random)
+train<-News[index,]
+test<-News[-index,]
+
+#SVM linear
+svmLinearModel = svm(popular~.-shares,data = train,type="C-classification",kernel="linear")
+svm_linear_pred = predict(svmLinearModel,test)
+
+#creating confusion matrix
+confusion_matrix_lin<-table(svm_linear_pred,test$popular)
+
+#calculating miss classification rate
+miss_class_lin<-1-(sum(diag(confusion_matrix_lin))/sum(confusion_matrix_lin))
+print(miss_class_lin)
+
+
+#SVM polynomial
+svmPolyModel = svm(popular~.-shares,data = train,type="C-classification",kernel="polynomial")
+svm_poly_pred = predict(svmPolyModel,test)
+
+#creating confusion matrix
+confusion_matrix_poly<-table(svm_poly_pred,test$popular)
+
+#calculating miss classification rate
+miss_class_poly<-1-(sum(diag(confusion_matrix_poly))/sum(confusion_matrix_poly))
+print(miss_class_poly)
+
+#SVM radial
+svmRadialModel = svm(popular~.-shares,data = train,type="C-classification",kernel="radial")
+svm_radial_pred = predict(svmRadialModel,test)
+
+#creating confusion matrix
+confusion_matrix_rad<-table(svm_radial_pred,test$popular)
+
+#calculating miss classification rate
+miss_class_rad<-1-(sum(diag(confusion_matrix_rad))/sum(confusion_matrix_rad))
+cat("\nMiss Classification Rate-")
+print(miss_class)
+cat("\n")
+
+cat("\nAccuracy-")
+print(1-miss_class)
+cat("\n")
+```
+
+```{r}
+#Random Forest
+cat("\n Random Forest Model")
+#importing required libraries
+library(party)
+require(randomForest)
+
+# Reading data to a dataframe :
+
+#News <- read.csv('OnlineNewsPopularity.csv', header = TRUE)
+News<-read.csv('A:/Da_proj/OnlineNewsPopularity/OnlineNewsPopularity.csv')
+
+#removing outlier
+News=News[!News$n_unique_tokens==701,]
+
+#removing non numeric attributes
+News <- subset( News, select = -c(url, timedelta, is_weekend ) )
+
+#classifiying if popular or not using threshold = 3rd quantile
+q<-quantile(News$shares,0.75)
+popular = ifelse(News$shares<=q, 0, 1)
+#0 signifies not popular and 1 signifies popular
+News = data.frame(News, popular)
+
+set.seed(227)
+#spliting data into train and test
+n_random<-round(0.75*nrow(News))
+index<-sample(1:nrow(News),n_random)
+train<-News[index,]
+test<-News[-index,]
+
+# Create the forest.
+output.forest <- randomForest(popular ~ .-shares, data = train,ntree=500)
+
+# View the forest results.
+print(output.forest) 
+
+#predicting 
+random_forest_pred<-predict(output.forest,test)
+
+#creating confusion matrix
+confusion_matrix<-table(random_forest_pred,test$popular)
+
+#calculating miss classification rate
+miss_class<-1-(sum(diag(confusion_matrix))/sum(confusion_matrix))
+cat("\nMiss Classification Rate-")
+print(miss_class)
+cat("\n")
+
+cat("\nAccuracy-")
+print(1-miss_class)
+cat("\n")
+```
+
+```{r}
+#Gradient Boosting Model
+cat("\n Gradient Boosting Model")
+# load required libraries
+library(caret)
+library(corrplot)
+library(plyr)
+require(gbm)
+
+# load required dataset
+dat <- read.csv("OnlineNewsPopularity.csv")
+
+# Set seed
+set.seed(227)
+
+# Remove variables having high missing percentage (50%)
+dat1 <- dat[, colMeans(is.na(dat)) <= .5]
+dim(dat1)
+
+# Remove Zero and Near Zero-Variance Predictors
+nzv <- nearZeroVar(dat1)
+dat2 <- dat1[, -nzv]
+dim(dat2)
+
+# Identifying numeric variables
+numericData <- dat2[sapply(dat2, is.numeric)]
+
+# Calculate correlation matrix
+descrCor <- cor(numericData)
+
+# Print correlation matrix and look at max correlation
+print(descrCor)
+summary(descrCor[upper.tri(descrCor)])
+
+# find attributes that are highly corrected
+highlyCorrelated <- findCorrelation(descrCor, cutoff=0.7)
+
+# print indexes of highly correlated attributes
+print(highlyCorrelated)
+
+# Indentifying Variable Names of Highly Correlated Variables
+highlyCorCol <- colnames(numericData)[highlyCorrelated]
+
+# Print highly correlated attributes
+highlyCorCol
+
+# Remove highly correlated variables and create a new dataset
+dat3 <- dat2[, -which(colnames(dat2) %in% highlyCorCol)]
+#dat3
+
+#classifiying if popular or not using threshold = 3rd quantile
+q<-quantile(dat3$shares,0.75)
+popular = ifelse(dat3$shares<=q, 0, 1)
+dat3 = data.frame(dat3, popular)
+
+#removing non numerical data "url"
+dat3<-dat3[,-1]
+
+#spliting data into train and test
+n_random<-round(0.7*nrow(dat3))
+index<-sample(1:nrow(dat3),n_random)
+train<-dat3[index,]
+test<-dat3[-index,]
+
+#training model
+boost.train<-gbm(popular ~ . -shares ,data =train,distribution = "gaussian",n.trees = 100,
+                  shrinkage = 0.01, interaction.depth = 4)
+summary(boost.train)
+
+#no of trees
+n.trees = seq(from=10 ,to=100, by=10)
+
+#Generating a Prediction matrix for each Tree
+predmatrix<-predict(boost.train,test,n.trees = n.trees)
+#dimentions of the Prediction Matrix
+dim(predmatrix) 
+
+#Calculating The Mean squared Test Error
+test.error<-with(test,apply((predmatrix-test$popular)^2,2,mean))
+cat("\n RMSE")
+head(test.error)
+cat("\n")
+
+#Plotting the test error vs number of trees
+plot(n.trees , test.error , pch=19,col="blue",xlab="Number of Trees",ylab="Test Error", main = "Perfomance of Boosting on Test Set")
+
+```
