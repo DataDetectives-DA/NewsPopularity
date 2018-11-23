@@ -1,5 +1,5 @@
 library(dplyr)
-data<- read.csv('OnlineNewsPopularity.csv',header =TRUE)
+data<- read.csv('A:/Da_proj/OnlineNewsPopularity/OnlineNewsPopularity.csv',header =TRUE)
 data <- subset( data, select = -c(url, timedelta, is_weekend ) )
 data=data[!data$n_unique_tokens==701,]
 data$shares<-as.numeric(data$shares)
@@ -27,7 +27,7 @@ train_popular_sorted<-train_popular[order(train_popular$dist),]
 train_popular_sorted_k<-train_popular_sorted[1:k, 1:(ncol(train_popular)-2)]
 #print(train_popular_sorted_k)
 centroid<-colMeans(train_popular_sorted_k)
-print("Recommended following changes to make the article popular:\n")
+print("Recommended following changes to make the above test sample article popular:\n")
 print(colMeans(train_popular_sorted_k) ) #printing recommendations
 return (centroid)
 }
@@ -36,8 +36,9 @@ return (centroid)
 trying<-subset(test,popular==0)
 testsample<-sample_n(trying,1)
 populartrain<-subset(train,train$popular==1)
-
+cat("\n For a test sample which is not popular has following values:\n")
+print(testsample)
 #calling recommendation function which tells what changes needed to be made in the given article to get the number of shares that makes it popularticle to get shares that makes it popular
 #recommendation function takes arguments (test data point,trained data,k neigbours that need to looked to)
-recommended_changes<-recommend(testsample,populartrain,2) 
+recommended_changes<-recommend(testsample,populartrain,2)  
 
