@@ -12,7 +12,7 @@ Nominal features were transformed with one hot encoding.
 3 types of keywords-worst,average and best
 NLP features-LDA(latent Dirichlet allocation),Title Subjectivity,Title Sentiment Polarity,Rate of positive and Negative words.
 
-Data Preprocessing and Exploratory Data Analysis
+Data Preprocessing and Exploratory Data Analysis :run preprocess_visualize.rmd
 
 Removed Outlier and Checked for NA values.
 Plotted Graphs to visualize the relation between variables.
