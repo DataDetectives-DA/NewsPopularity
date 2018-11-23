@@ -33,7 +33,7 @@ Gradient Boosting Method: gradient_boosting.r
 We considered the news with shares more than 3rd quartile as popular.
 
 
-Recommendation System: run recommendation.r
+Recommendation System: run recommendation.rmd
 
 Calculating the euclidean distance from the test data point to the train data point.
 Calculating the centroid of K nearest neighbours to the test data point and suggesting the changes for that data point.
