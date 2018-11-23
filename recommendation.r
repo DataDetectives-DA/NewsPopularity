@@ -2,8 +2,8 @@ library(dplyr)
 data<- read.csv('~/Sem 5/DA/project/OnlineNewsPopularity/OnlineNewsPopularity.csv',header =TRUE)
 data<-data[-1]
 data$shares<-as.numeric(data$shares)
-q<-quantile(data$shares>=q,1,0)
-data$popular<-ifelse(data$shares>=1400,1,0)
+q<-quantile(data$shares,0.75)
+data$popular<-ifelse(data$shares>=q,1,0)
 
 set.seed(40) 
 train<-sample_frac(data,0.8)
