@@ -1,4 +1,0 @@
-TODO LIST-:
-1.logistic model (threshold justification)
-2.appropriate feature selection method
-3.scatter plots and checking normal distribution of attributes
