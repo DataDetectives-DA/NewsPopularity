@@ -1,3 +1,4 @@
+#LINEAR MODEL
 # Reading data to a dataframe :
 
 News <- read.csv('OnlineNewsPopularity.csv', header = TRUE)
