@@ -1,5 +1,5 @@
 library(dplyr)
-data<- read.csv('~/Sem 5/DA/project/OnlineNewsPopularity/OnlineNewsPopularity.csv',header =TRUE)
+data<- read.csv('OnlineNewsPopularity.csv',header =TRUE)
 data<-data[-1]
 data$shares<-as.numeric(data$shares)
 q<-quantile(data$shares,0.75)
