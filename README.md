@@ -21,19 +21,19 @@ Stepwise feature selection was done which gave better results.
 We used log transformation on the data to make it normally distributed.
 This proves why this works better as a classification model as classification involves the log transform.
 
-MODELS USED:models.rmd
+MODELS USED: run models.rmd
 
 We used different models to train our dataset and predict results according to them. 
-Linear Regression:linear_model.r
-Logistic Regression:logistic.r
-Random Forest:random_forest.r
-Support Vector Machine(SVM):svm.r
-Decision Trees:decision_trees.r
-Gradient Boosting Method:gradient_boosting.r
+Linear Regression:  linear_model.r
+Logistic Regression: logistic.r
+Random Forest: random_forest.r
+Support Vector Machine(SVM): svm.r
+Decision Trees: decision_trees.r
+Gradient Boosting Method: gradient_boosting.r
 We considered the news with shares more than 3rd quartile as popular.
 
 
-Recommendation System:recommendation.r
+Recommendation System: run recommendation.r
 
 Calculating the euclidean distance from the test data point to the train data point.
 Calculating the centroid of K nearest neighbours to the test data point and suggesting the changes for that data point.
